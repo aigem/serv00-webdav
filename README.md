@@ -14,51 +14,31 @@
 
 ## 2. 系统需求
 
-- **Python 3**（如果系统没有，请提前安装）
-- **pip3**（Python 包管理器）
-- 用户对 `/usr/home/用户名` 文件夹有读写权限
+- **serv00**（免费注册，现在相对没之前容易，因为需要好点的IP）
+
+### 2.1 ssh登录
+   ```bash
+   ssh 你的用户名@sX.serv00.com
+   ```
 
 ## 3. 部署步骤
 
-### 3.1 安装 WsgiDAV
+### 3.1 一键安装
 
 1. **下载并运行安装脚本**  
    首先，您需要通过以下命令下载并执行安装脚本，它将自动为您安装所需的依赖项，并配置 WsgiDAV 服务：
    ```bash
-   curl -O https://example.com/install_wsgidav.sh
+   git clone https://github.com/aigem/serv00-webdav.git
+   cd serv00-webdav
    chmod +x install_wsgidav.sh
+   chmod +x setup_wsgidav.sh
    ./install_wsgidav.sh
    ```
 
 2. **脚本说明**  
    - 该脚本将自动安装 PM2 和 WsgiDAV。
-   - 默认端口为 8080，根目录为 `/usr/home/用户名/webdav-root`。
+   - 设置阶段选择你的端口，根目录为 `/usr/home/用户名/webdav`。
    - 服务启动后，PM2 会自动管理 WsgiDAV 服务，确保其在系统重启后恢复。
-
-### 3.2 配置 WsgiDAV
-
-为了更好地控制您的 WebDAV 服务器，您可以运行以下配置脚本来更改端口、用户名和密码：
-
-1. **下载并运行配置脚本**：
-   ```bash
-   curl -O https://example.com/setup_wsgidav.sh
-   chmod +x setup_wsgidav.sh
-   ./setup_wsgidav.sh
-   ```
-
-2. **脚本说明**  
-   - 脚本将提示您输入自定义的端口号、用户名和密码。  
-   - 所有更改将在 WsgiDAV 配置文件中生效，并且服务会自动重启以应用这些更改。
-
-### 3.3 验证服务是否成功运行
-
-1. 使用浏览器访问 WebDAV 服务：
-   ```
-   http://your-server-ip:your-port
-   ```
-   例如，如果您将端口设置为 8080，使用 `http://your-server-ip:8080` 进行访问。
-
-2. 输入您在配置步骤中设置的用户名和密码。
 
 ## 4. 自动化任务
 
@@ -84,12 +64,7 @@ crontab -e
 
 ## 5. 注意事项
 
-- **端口号冲突**：如果默认的端口号 8080 被其他服务占用，请在配置脚本中修改为一个空闲端口，您可以使用以下命令查看系统已有的端口号：
-   ```bash
-   sockstat -4 -l
-   ```
-- **安全性**：建议在生产环境中启用 SSL 以加密数据传输。关于如何配置 SSL，请参考 [WsgiDAV 官方文档](https://wsgidav.readthedocs.io/en/latest/user_guide_configure.html#ssl-support)。
-- **权限问题**：由于您在 `serv00` VPS 中没有 root 权限，所有文件和脚本都只能放在 `/usr/home/用户名` 目录下，确保服务在该目录中运行。
+- **端口号**：在serv00管理后台侧边栏进行Port reservation，增加端口，设置阶段请填入这个端口。
 
 ## 6. 常见问题
 
@@ -119,12 +94,3 @@ crontab -e
 ## 8. 结语
 
 通过本指南，您已经成功在 FreeBSD 系统上部署了 WsgiDAV 服务，并通过 PM2 保证其持久运行。希望这能帮助您方便地进行文件共享和管理。若有任何问题或建议，欢迎通过官方文档或社区寻求帮助。
-
-
-### 说明：
-
-1. **分步骤部署**：文档中将安装和配置步骤进行了清晰的分离，使不同用户可以根据需求快速部署或调整。
-2. **自动化任务设置**：通过 PM2 和 cron 的结合，文档确保了系统重启后的自动恢复功能。
-3. **详细的注意事项**：包括端口号检查、SSL 安全建议、权限限制等信息，确保用户在不同环境下的兼容性。
-
-这样，用户不仅能快速部署 WsgiDAV，还能灵活调整配置，确保服务稳定运行。

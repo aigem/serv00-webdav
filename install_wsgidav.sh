@@ -8,6 +8,14 @@ VENV_PATH="$USER_HOME/venv_webdav"
 export CFLAGS="-I/usr/local/include"
 export CXXFLAGS="-I/usr/local/include"
 
+# 安装PM2
+if ! command -v pm2 &> /dev/null; then
+    echo "正在安装 PM2..."
+    npm install pm2
+else
+    echo "PM2 已安装。"
+fi
+
 # 创建并激活虚拟环境
 if [ ! -d "$VENV_PATH" ]; then
     echo "创建虚拟环境..."
@@ -24,14 +32,6 @@ if [ "$VIRTUAL_ENV" != "" ]; then
 else
     echo "虚拟环境激活失败，请检查配置。"
     exit 1
-fi
-
-# 安装PM2
-if ! command -v pm2 &> /dev/null; then
-    echo "正在安装 PM2..."
-    pip install pm2
-else
-    echo "PM2 已安装。"
 fi
 
 # 确认 PM2 安装在虚拟环境中

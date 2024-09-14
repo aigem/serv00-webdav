@@ -4,6 +4,10 @@
 USER_HOME="/usr/home/$(whoami)"
 VENV_PATH="$USER_HOME/venv_webdav"
 
+#可选
+export CFLAGS="-I/usr/local/include"
+export CXXFLAGS="-I/usr/local/include"
+
 # 创建并激活虚拟环境
 if [ ! -d "$VENV_PATH" ]; then
     echo "创建虚拟环境..."

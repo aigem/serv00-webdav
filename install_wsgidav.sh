@@ -2,23 +2,44 @@
 
 # 用户目录
 USER_HOME="/usr/home/$(whoami)"
+VENV_PATH="$USER_HOME/venv_webdav"
 
-# 进入用户目录并创建虚拟环境
-cd "$USER_HOME" || exit
-if [ ! -d "venv_webdav" ]; then
-    virtualenv venv_webdav
+# 创建并激活虚拟环境
+if [ ! -d "$VENV_PATH" ]; then
+    echo "创建虚拟环境..."
+    virtualenv "$VENV_PATH"
 fi
-source venv_webdav/bin/activate
+
+# 激活虚拟环境
+echo "激活虚拟环境: $VENV_PATH"
+source "$VENV_PATH/bin/activate"
+
+# 检查虚拟环境是否激活
+if [ "$VIRTUAL_ENV" != "" ]; then
+    echo "虚拟环境已激活: $VIRTUAL_ENV"
+else
+    echo "虚拟环境激活失败，请检查配置。"
+    exit 1
+fi
 
 # 安装PM2
 if ! command -v pm2 &> /dev/null; then
     echo "正在安装 PM2..."
     pip install pm2
-    pm2 startup
+else
+    echo "PM2 已安装。"
 fi
 
+# 确认 PM2 安装在虚拟环境中
+PM2_PATH=$(which pm2)
+echo "PM2 安装路径: $PM2_PATH"
+
+# 启动 PM2 并设置开机启动
+$PM2_PATH startup
+$PM2_PATH save
+
 # 安装WsgiDAV和Cheroot
-echo "正在安装 WsgiDAV 和 Cheroot..."
+echo "安装WsgiDAV和Cheroot..."
 pip install wsgidav cheroot python-dotenv
 
 # 创建WsgiDAV配置文件
@@ -47,14 +68,22 @@ EOF
 mkdir -p "$USER_HOME/webdav"
 
 # 使用PM2启动WsgiDAV
-echo "通过 PM2 启动 WsgiDAV..."
-pm2 start wsgidav -- --config="$WSGIDAV_CONFIG"
+echo "使用PM2启动WsgiDAV..."
+$PM2_PATH start wsgidav -- --config="$WSGIDAV_CONFIG"
+
+# 检查WsgiDAV是否启动成功
+if pm2 list | grep -q "wsgidav"; then
+    echo "WsgiDAV已成功启动。"
+else
+    echo "WsgiDAV启动失败，请检查配置。"
+    exit 1
+fi
 
 # 保存PM2状态
-pm2 save
+$PM2_PATH save
 
 # 设置cron任务在重启后自动启动PM2
-(crontab -l 2>/dev/null; echo "@reboot $(which pm2) resurrect") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot $PM2_PATH resurrect") | crontab -
 
 # 提示安装完成
 echo "WsgiDAV 安装完成，您可以通过 ./setup_wsgidav.sh 进行进一步配置。"

@@ -18,8 +18,9 @@
 
 ### 2.1 ssh登录
    ```bash
-   ssh 你的用户名@sX.serv00.com
+   ssh 你的用户名@sX.serv00.com 或IP
    ```
+IP在后台WWW websites中查看，有两个。
 
 ## 3. 部署步骤
 

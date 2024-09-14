@@ -1,11 +1,10 @@
-以下是针对优化后的部署脚本编写的完整 `README.md` 文件，涵盖了安装说明、配置步骤、注意事项等信息，以便其他用户快速上手和部署 WsgiDAV。
-
-
-# WsgiDAV 安装与部署指南
+# 一键让serv00变你的免费私人网盘(webdav): WsgiDAV 安装与部署指南
 
 ## 1. 简介
 
-**WsgiDAV** 是一个基于 Python 的可扩展 WebDAV 服务器，支持 SSL，可作为独立命令行脚本运行在 Linux、OSX、和 Windows 系统上。本指南帮助您在 FreeBSD 系统（如 serv00 免费 VPS）上快速部署 WsgiDAV，并确保服务在系统重启后自动恢复。
+**WsgiDAV** 是一个基于 Python 的可扩展 WebDAV 服务器，支持 SSL，可作为独立命令行脚本运行在 Linux、OSX、和 Windows 系统上。
+
+本安装脚本帮助您在 FreeBSD 系统（如 serv00 免费 VPS）上快速部署 WsgiDAV，并确保服务在系统重启后自动恢复。一键让serv00变你的免费私人网盘(webdav)。
 
 **主要功能：**
 - 提供 WebDAV 文件共享服务

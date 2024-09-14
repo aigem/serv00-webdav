@@ -8,6 +8,8 @@ VENV_PATH="$USER_HOME/venv_webdav"
 export CFLAGS="-I/usr/local/include"
 export CXXFLAGS="-I/usr/local/include"
 
+cd "$USER_HOME"
+
 # 安装PM2
 if ! command -v pm2 &> /dev/null; then
     echo "正在安装 PM2..."
@@ -37,10 +39,6 @@ fi
 # 确认 PM2 安装在虚拟环境中
 PM2_PATH=$(which pm2)
 echo "PM2 安装路径: $PM2_PATH"
-
-# 启动 PM2 并设置开机启动
-$PM2_PATH startup
-$PM2_PATH save
 
 # 安装WsgiDAV和Cheroot
 echo "安装WsgiDAV和Cheroot..."
@@ -96,12 +94,12 @@ echo "WsgiDAV 安装完成，您可以通过 ./setup_wsgidav.sh 进行进一步�
 read -p "是否现在运行 ./setup_wsgidav.sh 进行配置？(输入 'yes' 继续) " user_input
 
 if [ "$user_input" == "yes" ]; then
-    if [ -f "$USER_HOME/setup_wsgidav.sh" ]; then
+    if [ -f "$USER_HOME/serv00-webdav/setup_wsgidav.sh" ]; then
         echo "正在运行 ./setup_wsgidav.sh..."
-        chmod +x "$USER_HOME/setup_wsgidav.sh"
-        "$USER_HOME/setup_wsgidav.sh"
+        chmod +x "$USER_HOME/serv00-webdav/setup_wsgidav.sh"
+        "$USER_HOME/serv00-webdav/setup_wsgidav.sh"
     else
-        echo "未找到 setup_wsgidav.sh 文件，请确认脚本是否已下载到 $USER_HOME 目录。"
+        echo "未找到 setup_wsgidav.sh 文件，请确认脚本是否已下载到 $USER_HOME/serv00-webdav 目录。"
     fi
 else
     echo "您可以稍后手动运行 ./setup_wsgidav.sh 来进行配置。"

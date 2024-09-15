@@ -4,9 +4,6 @@
 USER_HOME="/usr/home/$(whoami)"
 VENV_PATH="$USER_HOME/venv_webdav"
 
-# 可选的编译标志
-export CFLAGS="-I/usr/local/include"
-export CXXFLAGS="-I/usr/local/include"
 
 cd "$USER_HOME"
 
@@ -18,6 +15,15 @@ else
     echo "PM2 已安装。"
 fi
 
+echo 'export PATH="$USER_HOME/node_modules/pm2/bin:$PATH"' >> "$USER_HOME/.bash_profile"
+echo 'export CFLAGS="-I/usr/local/include"' >> "$USER_HOME/.bash_profile"
+echo 'export CXXFLAGS="-I/usr/local/include"' >> "$USER_HOME/.bash_profile"
+
+# 重新加载 .bash_profile
+source "$USER_HOME/.bash_profile"
+
+echo "$(which pm2)"
+
 # 创建并激活虚拟环境
 if [ ! -d "$VENV_PATH" ]; then
     echo "创建虚拟环境..."
@@ -28,17 +34,23 @@ fi
 echo "激活虚拟环境: $VENV_PATH"
 source "$VENV_PATH/bin/activate"
 
-# 检查虚拟环境是否激活
-if [ "$VIRTUAL_ENV" != "" ]; then
-    echo "虚拟环境已激活: $VIRTUAL_ENV"
-else
+if [ -z "$VIRTUAL_ENV" ]; then
     echo "虚拟环境激活失败，请检查配置。"
     exit 1
+else
+    echo "虚拟环境已激活: $VIRTUAL_ENV"
 fi
 
+
 # 确认 PM2 安装路径 (npm 安装路径)
-PM2_PATH="$USER_HOME/node_modules/pm2/bin/pm2"
-echo "PM2 安装路径: $PM2_PATH"
+if [ ! -f "$USER_HOME/node_modules/pm2/bin/pm2" ]; then
+    echo "PM2路径不正确。$(which pm2)"
+    exit 1
+else
+    echo "PM2 已安装。"
+    echo "PM2 安装路径为:  $(which pm2) "
+    PM2_PATH="$USER_HOME/node_modules/pm2/bin/pm2"
+fi
 
 # 安装 WsgiDAV 和 Cheroot
 echo "安装 WsgiDAV 和 Cheroot..."
@@ -64,14 +76,29 @@ simple_dc:
   user_mapping:
     "*":
       "user": "password"  # 请修改为用户名和密码
+hotfixes:
+  re_encode_path_info: true  # 允许处理路径中的特殊字符，如中文
+add_header_MS_Author_Via: true  # 允许 MS Office 通过 WebDAV 进行编辑
+server_args:
+  numthreads: 10  # 设置服务器线程数，调整以提升并发处理能力
+  request_queue_size: 5  # 请求队列的大小，决定等待处理的最大请求数
+  timeout: 10  # 请求超时时间，单位为秒
+http_authenticator:
+  domain_controller: wsgidav.dc.nt_dc.NTDomainController
+  accept_basic: true
+  accept_digest: false
+  default_to_digest: false
+nt_dc:
+  preset_domain: null
+  preset_server: null
 EOF
 
 # 创建 WebDAV 根目录
 mkdir -p "$USER_HOME/webdav"
 
-# 使用 PM2 启动 WsgiDAV
+## 使用 PM2 启动 WsgiDAV
 echo "使用 PM2 启动 WsgiDAV..."
-$PM2_PATH start wsgidav -- --config="$WSGIDAV_CONFIG"
+$PM2_PATH start wsgidav --interpreter $VENV_PATH/bin/python -- --config=$USER_HOME/wsgidav.yaml
 
 # 检查 WsgiDAV 是否启动成功
 if $PM2_PATH list | grep -q "wsgidav"; then

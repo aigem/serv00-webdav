@@ -32,7 +32,6 @@ IP在后台WWW websites中查看，有两个。
    git clone https://github.com/aigem/serv00-webdav.git
    cd serv00-webdav
    chmod +x install_wsgidav.sh
-   chmod +x setup_wsgidav.sh
    ./install_wsgidav.sh
    ```
 

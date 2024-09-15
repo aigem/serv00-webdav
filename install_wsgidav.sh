@@ -4,14 +4,14 @@
 USER_HOME="/usr/home/$(whoami)"
 VENV_PATH="$USER_HOME/venv_webdav"
 
-#可选
+# 可选的编译标志
 export CFLAGS="-I/usr/local/include"
 export CXXFLAGS="-I/usr/local/include"
 
 cd "$USER_HOME"
 
-# 安装PM2
-if ! command -v pm2 &> /dev/null; then
+# 安装 PM2 (使用 npm)
+if [ ! -f "$USER_HOME/node_modules/pm2/bin/pm2" ]; then
     echo "正在安装 PM2..."
     npm install pm2
 else
@@ -36,15 +36,15 @@ else
     exit 1
 fi
 
-# 确认 PM2 安装在虚拟环境中
-PM2_PATH=$(which pm2)
+# 确认 PM2 安装路径 (npm 安装路径)
+PM2_PATH="$USER_HOME/node_modules/pm2/bin/pm2"
 echo "PM2 安装路径: $PM2_PATH"
 
-# 安装WsgiDAV和Cheroot
-echo "安装WsgiDAV和Cheroot..."
+# 安装 WsgiDAV 和 Cheroot
+echo "安装 WsgiDAV 和 Cheroot..."
 pip install wsgidav cheroot python-dotenv
 
-# 创建WsgiDAV配置文件
+# 创建 WsgiDAV 配置文件
 WSGIDAV_CONFIG="$USER_HOME/wsgidav.yaml"
 cat <<EOF > "$WSGIDAV_CONFIG"
 # WsgiDAV configuration file
@@ -66,25 +66,25 @@ simple_dc:
       "user": "password"  # 请修改为用户名和密码
 EOF
 
-# 创建WebDAV根目录
+# 创建 WebDAV 根目录
 mkdir -p "$USER_HOME/webdav"
 
-# 使用PM2启动WsgiDAV
-echo "使用PM2启动WsgiDAV..."
+# 使用 PM2 启动 WsgiDAV
+echo "使用 PM2 启动 WsgiDAV..."
 $PM2_PATH start wsgidav -- --config="$WSGIDAV_CONFIG"
 
-# 检查WsgiDAV是否启动成功
-if pm2 list | grep -q "wsgidav"; then
-    echo "WsgiDAV已成功启动。"
+# 检查 WsgiDAV 是否启动成功
+if $PM2_PATH list | grep -q "wsgidav"; then
+    echo "WsgiDAV 已成功启动。"
 else
-    echo "WsgiDAV启动失败，请检查配置。"
+    echo "WsgiDAV 启动失败，请检查配置。"
     exit 1
 fi
 
-# 保存PM2状态
+# 保存 PM2 状态
 $PM2_PATH save
 
-# 设置cron任务在重启后自动启动PM2
+# 设置 cron 任务在重启后自动启动 PM2
 (crontab -l 2>/dev/null; echo "@reboot $PM2_PATH resurrect") | crontab -
 
 # 提示安装完成

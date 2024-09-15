@@ -3,10 +3,11 @@
 # 用户目录
 USER_HOME="/usr/home/$(whoami)"
 CONFIG_FILE="$USER_HOME/wsgidav.yaml"
+PM2_PATH="$USER_HOME/node_modules/pm2/bin/pm2"
 
 # 检查 PM2 是否保存了应用状态
 echo "当前 PM2 中保存的应用状态:"
-pm2 list
+$PM2_PATH list
 
 # 提示用户输入端口号
 echo "请输入 WsgiDAV 的端口号 (默认: 8080):"
@@ -22,7 +23,7 @@ read -sr WEBDAV_PASSWORD
 sed -i "" "s/port: 8080/port: $WSGIDAV_PORT/" "$CONFIG_FILE"
 sed -i "" "s/user: password/$WEBDAV_USER: $WEBDAV_PASSWORD/" "$CONFIG_FILE"
 
-# 重启PM2以应用更改
-pm2 restart all
+# 重启 PM2 以应用更改
+$PM2_PATH restart all
 
 echo "WsgiDAV 配置已更新，当前服务运行在端口: $WSGIDAV_PORT."

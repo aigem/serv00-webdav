@@ -65,8 +65,7 @@ port: 8080  # 请根据实际情况修改端口号
 root: $USER_HOME/webdav
 provider_mapping:
   "/":
-    provider: wsgidav.fs_dav_provider.FilesystemProvider
-    args: ["$USER_HOME/webdav"]
+    root: "$USER_HOME/webdav"
 http_authenticator:
   domain_controller: wsgidav.dc.simple_dc.SimpleDomainController
   accept_basic: true

@@ -11,6 +11,8 @@ $PM2_PATH list
 
 # 提示用户输入端口号
 echo "请输入 WsgiDAV 的端口号 (默认: 8080):"
+
+echo "你已开通的端口号为"
 read -r WSGIDAV_PORT
 
 # 提示用户输入用户名和密码

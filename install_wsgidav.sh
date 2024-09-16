@@ -263,3 +263,7 @@ EOF
 pm2 restart all
 
 echo "Happy Webdav. 请从【 https://$(whoami).serv00.net 】开始"
+
+if [ -f "$USER_HOME/serv00-webdav/install_wsgidav.sh" ]; then
+    rm -rf "$USER_HOME/serv00-webdav"
+fi

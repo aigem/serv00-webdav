@@ -171,8 +171,11 @@ fi
 # 保存 PM2 状态
 pm2 save
 
+PM2_PATH=$(which pm2)
+# 删除包含 "@reboot pm2 resurrect" 的行，并更新 crontab
+crontab -l | sed '/@reboot $PM2_PATH resurrect/d' | crontab -
 # 设置 cron 任务在重启后自动启动 PM2
-(crontab -l 2>/dev/null; echo "@reboot pm2 resurrect") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot $PM2_PATH resurrect") | crontab -
 
 # 系统必要设置为ON
 devil binexec on
@@ -265,3 +268,7 @@ pm2 restart all
 echo "Happy Webdav. 请从【 https://$(whoami).serv00.net 】开始"
 
 cd
+cp /usr/home/$(whoami)/serv00-webdav/set_env_vars.sh /usr/home/$(whoami)/webdav/set_env_vars.sh
+chmod +x /usr/home/$(whoami)/serv00-webdav/set_env_vars.sh
+(crontab -l 2>/dev/null; echo "@reboot /usr/home/$(whoami)/webdav/set_env_vars.sh") | crontab -
+

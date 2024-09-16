@@ -29,38 +29,63 @@ else
     WSGIDAV_PORT="$user_input"
 fi
 
-# 提示用户输入 WebDAV 用户名和密码
 echo "请输入 WebDAV 的用户名 (默认: user):"
 read -r WEBDAV_USER
+WEBDAV_USER=${WEBDAV_USER:-user}  # 如果未输入值，默认使用 'user'
+
 echo "请输入 WebDAV 的密码 (默认: password):"
 read -sr WEBDAV_PASSWORD
+WEBDAV_PASSWORD=${WEBDAV_PASSWORD:-password}  # 如果未输入值，默认使用 'password'
 
+# 生成 WsgiDAV 配置文件
 # 生成 WsgiDAV 配置文件
 cat <<EOF > "$CONFIG_FILE"
 # WsgiDAV configuration file
 host: 0.0.0.0
 port: $WSGIDAV_PORT
 root: $USER_HOME/webdav
+server: "cheroot"  # 使用 cheroot 作为服务器
+mount_path: null
 provider_mapping:
-  "/":
-    root: "$USER_HOME/webdav"
+  "/": "$USER_HOME/webdav"
+    # provider: wsgidav.fs_dav_provider.FilesystemProvider
+    # root: 
+
+#: Additional configuration passed to `FilesystemProvider(..., fs_opts)`
+fs_dav_provider:
+    #: Mapping from request URL to physical file location, e.g.
+    #: make sure that a `/favicon.ico` URL is resolved, even if a `*.html`
+    #: or `*.txt` resource file was opened using the DirBrowser
+    # shadow_map:
+    #     '/favicon.ico': 'file_path/to/favicon.ico'
+    
+    #: Serve symbolic link files and folders (default: false)
+    follow_symlinks: false
+
 http_authenticator:
   domain_controller: wsgidav.dc.simple_dc.SimpleDomainController
   accept_basic: true
   accept_digest: true
   default_to_digest: true
+  
 simple_dc:
   user_mapping:
     "*":
-      "$WEBDAV_USER": "$WEBDAV_PASSWORD"
+      "$WEBDAV_USER": 
+        password: "$WEBDAV_PASSWORD"
+    '/pub': true
+
 hotfixes:
   re_encode_path_info: true
 add_header_MS_Author_Via: true
+
+# cheroot 服务器参数
 server_args:
   numthreads: 10
   request_queue_size: 5
   timeout: 10
 EOF
+
 
 # 网站指向部分
 echo "现需要修改你的网站($(whoami).serv00.net)指向 $WSGIDAV_PORT，并重置网站。"
@@ -77,10 +102,10 @@ if [[ "$user_input" == "yes" ]]; then
         echo "网站删除成功: $(whoami).serv00.net"
         ADD_OUTPUT=$(devil www add "$(whoami).serv00.net" proxy localhost "$WSGIDAV_PORT")
 
-        if echo "$ADD_OUTPUT" | grep -q "Domain added successfully"; then
+        if echo "$ADD_OUTPUT" | grep -q "Domain added succesfully"; then
             echo "网站成功重置并指向端口 $WSGIDAV_PORT。"
         else
-            echo "新建网站失败，请检查输出信息。"
+            echo "新建网站失败，请之后检查。不影响安装"
         fi
     else
         echo "删除网站失败，请检查。"
@@ -126,7 +151,7 @@ fi
 
 # 安装 WsgiDAV 和 Cheroot
 echo "安装 WsgiDAV 和 Cheroot..."
-pip install wsgidav cheroot python-dotenv
+pip install wsgidav cheroot python-dotenv lxml
 
 # 创建 WebDAV 根目录
 mkdir -p "$USER_HOME/webdav"

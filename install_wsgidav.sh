@@ -4,6 +4,7 @@
 USER_HOME="/usr/home/$(whoami)"
 VENV_PATH="$USER_HOME/venv_webdav"
 CONFIG_FILE="$USER_HOME/wsgidav.yaml"
+BASH_PROFILE="$USER_HOME/.bash_profile"
 
 # 切换到用户目录
 cd "$USER_HOME"
@@ -38,54 +39,39 @@ read -sr WEBDAV_PASSWORD
 WEBDAV_PASSWORD=${WEBDAV_PASSWORD:-password}  # 如果未输入值，默认使用 'password'
 
 # 生成 WsgiDAV 配置文件
-# 生成 WsgiDAV 配置文件
+
 cat <<EOF > "$CONFIG_FILE"
 # WsgiDAV configuration file
 host: 0.0.0.0
 port: $WSGIDAV_PORT
 root: $USER_HOME/webdav
-server: "cheroot"  # 使用 cheroot 作为服务器
+server: "cheroot"
 mount_path: null
 provider_mapping:
   "/": "$USER_HOME/webdav"
-    # provider: wsgidav.fs_dav_provider.FilesystemProvider
-    # root: 
-
-#: Additional configuration passed to `FilesystemProvider(..., fs_opts)`
 fs_dav_provider:
-    #: Mapping from request URL to physical file location, e.g.
-    #: make sure that a `/favicon.ico` URL is resolved, even if a `*.html`
-    #: or `*.txt` resource file was opened using the DirBrowser
-    # shadow_map:
-    #     '/favicon.ico': 'file_path/to/favicon.ico'
-    
-    #: Serve symbolic link files and folders (default: false)
     follow_symlinks: false
-
 http_authenticator:
   domain_controller: wsgidav.dc.simple_dc.SimpleDomainController
   accept_basic: true
   accept_digest: true
   default_to_digest: true
-  
 simple_dc:
   user_mapping:
     "*":
       "$WEBDAV_USER": 
         password: "$WEBDAV_PASSWORD"
     '/pub': true
-
 hotfixes:
   re_encode_path_info: true
 add_header_MS_Author_Via: true
 
 # cheroot 服务器参数
 server_args:
-  numthreads: 10
+  numthreads: 8
   request_queue_size: 5
   timeout: 10
 EOF
-
 
 # 网站指向部分
 echo "现需要修改你的网站($(whoami).serv00.net)指向 $WSGIDAV_PORT，并重置网站。"
@@ -122,15 +108,19 @@ else
     echo "PM2 已安装。"
 fi
 
-# 添加环境变量到 .bash_profile
-echo 'export PATH="$USER_HOME/node_modules/pm2/bin:$PATH"' >> "$USER_HOME/.bash_profile"
-echo 'export CFLAGS="-I/usr/local/include"' >> "$USER_HOME/.bash_profile"
-echo 'export CXXFLAGS="-I/usr/local/include"' >> "$USER_HOME/.bash_profile"
+# 删除 .bash_profile 中可能存在的旧条目
+sed -i '/export PATH=".*\/node_modules\/pm2\/bin:$PATH"/d' "$BASH_PROFILE"
+sed -i '/export CFLAGS="-I/usr/local/include"/d' "$BASH_PROFILE"
+sed -i 'export CXXFLAGS="-I/usr/local/include"/d' "$BASH_PROFILE"
+
+# 添加新的环境变量条目到 .bash_profile
+echo "export PATH=\"$USER_HOME/node_modules/pm2/bin:\$PATH\"" >> "$BASH_PROFILE"
+echo 'export CFLAGS="-I/usr/local/include"' >> "$BASH_PROFILE"
+echo 'export CXXFLAGS="-I/usr/local/include"' >> "$BASH_PROFILE"
 
 # 重新加载 .bash_profile
-source "$USER_HOME/.bash_profile"
+source "$BASH_PROFILE"
 
-echo "PM2 安装路径为: $(which pm2)"
 
 # 创建并激活虚拟环境
 if [ ! -d "$VENV_PATH" ]; then
@@ -151,10 +141,12 @@ fi
 
 # 安装 WsgiDAV 和 Cheroot
 echo "安装 WsgiDAV 和 Cheroot...(可选lxml)"
-pip install wsgidav cheroot python-dotenv
+pip install wsgidav cheroot
 
-# 创建 WebDAV 根目录
+# 创建 WebDAV 等目录
 mkdir -p "$USER_HOME/webdav"
+mkdir -p "$USER_HOME/webdav/dav"
+
 
 # 使用 PM2 启动 WsgiDAV
 echo "使用 PM2 启动 WsgiDAV..."
@@ -179,8 +171,87 @@ devil binexec on
 
 # 提示安装完成
 echo "WsgiDAV 安装完成并已启动，当前服务运行在端口: $WSGIDAV_PORT"
+echo 'WsgiDAV版本："$VENV_PATH/bin/wsgidav -V"'
+
 
 # 重启 PM2 以应用更改
 pm2 restart all
 
-echo "Happy Webdav. 请访问 $(whoami).serv00.net 开始"
+rm $USER_HOME/domains/$(whoami).serv00.net/public_html/index.html
+
+# 生成 info.html 文件
+INFO_FILE="$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html"
+
+cat <<EOF > "$INFO_FILE"
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WsgiDAV 安装成功</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            line-height: 1.6;
+            color: #666;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WebDAV 已成功安装</h1>
+        <p>恭喜！WsgiDAV 已成功安装并运行在 <strong>$(whoami).serv00.net</strong> 上。当前的 WebDAV 服务正在端口 <strong>$WSGIDAV_PORT</strong> 上运行。</p>
+
+        <h2>主要功能</h2>
+        <ul>
+            <li>提供 WebDAV 文件共享服务</li>
+            <li>支持简单的用户认证</li>
+            <li>使用 PM2 管理服务，确保其在系统重启后自动恢复</li>
+        </ul>
+
+        <h2>进一步阅读</h2>
+        <p>欲了解更多详细说明和安装步骤，请访问 GitHub 仓库：</p>
+        <p><a href="https://github.com/aigem/serv00-webdav" target="_blank">WsgiDAV GitHub 仓库</a></p>
+
+        <h2>常见问题</h2>
+        <p>1. 如何重启 WsgiDAV 服务？</p>
+        <p>使用以下命令重启 PM2 中的所有服务：</p>
+        <pre><code>pm2 restart all</code></pre>
+
+        <p>2. 如何查看 WsgiDAV 的运行日志？</p>
+        <p>使用以下命令查看 PM2 的日志：</p>
+        <pre><code>pm2 logs</code></pre>
+
+        <p>3. 如何停止 WsgiDAV 服务？</p>
+        <p>使用以下命令停止服务：</p>
+        <pre><code>pm2 stop wsgidav</code></pre>
+    </div>
+</body>
+</html>
+EOF
+
+
+echo "Happy Webdav. 请从【 https://$(whoami).serv00.net 】开始"

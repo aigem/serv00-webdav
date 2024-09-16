@@ -150,8 +150,8 @@ else
 fi
 
 # 安装 WsgiDAV 和 Cheroot
-echo "安装 WsgiDAV 和 Cheroot..."
-pip install wsgidav cheroot python-dotenv lxml
+echo "安装 WsgiDAV 和 Cheroot...(可选lxml)"
+pip install wsgidav cheroot python-dotenv
 
 # 创建 WebDAV 根目录
 mkdir -p "$USER_HOME/webdav"
@@ -183,4 +183,4 @@ echo "WsgiDAV 安装完成并已启动，当前服务运行在端口: $WSGIDAV_P
 # 重启 PM2 以应用更改
 pm2 restart all
 
-echo "Happy Webdav."
+echo "Happy Webdav. 请访问 $(whoami).serv00.net 开始"

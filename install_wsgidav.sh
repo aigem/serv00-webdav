@@ -140,17 +140,22 @@ source "$BASH_PROFILE"
 if [ ! -d "$VENV_PATH" ]; then
     echo "创建虚拟环境..."
     virtualenv "$VENV_PATH"
+else
+    echo "虚拟环境已存在: $VENV_PATH"
 fi
 
 # 激活虚拟环境
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo "激活虚拟环境: $VENV_PATH"
+source "$VENV_PATH/bin/activate"
 
-if [ -z "$VIRTUAL_ENV" ]; then
+# 检查虚拟环境是否成功激活
+if [ $? -ne 0 ]; then
     echo "虚拟环境激活失败，请检查配置。"
     exit 1
 else
-    echo "虚拟环境已激活: $VIRTUAL_ENV"
+    echo "虚拟环境已成功激活。"
+    echo "当前虚拟环境路径: $(which python)"
 fi
 
 # 安装 WsgiDAV 和 Cheroot

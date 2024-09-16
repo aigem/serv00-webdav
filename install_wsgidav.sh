@@ -9,6 +9,10 @@ BASH_PROFILE="$USER_HOME/.bash_profile"
 # 切换到用户目录
 cd "$USER_HOME"
 
+# 创建 WebDAV 等目录
+mkdir -p "$USER_HOME/webdav"
+mkdir -p "$USER_HOME/webdav/dav"
+
 # 提示用户输入 WsgiDAV 的端口号或开通新端口号
 echo "请输入 WebDAV 的端口号 (需要你开通):"
 echo "你已开通的端口号为: "
@@ -142,11 +146,6 @@ fi
 # 安装 WsgiDAV 和 Cheroot
 echo "安装 WsgiDAV 和 Cheroot...(可选lxml)"
 pip install wsgidav cheroot
-
-# 创建 WebDAV 等目录
-mkdir -p "$USER_HOME/webdav"
-mkdir -p "$USER_HOME/webdav/dav"
-
 
 # 使用 PM2 启动 WsgiDAV
 echo "使用 PM2 启动 WsgiDAV..."

@@ -29,9 +29,19 @@ if [[ "$user_input" == "add" ]]; then
     devil port list
     echo "请输入生成的端口号: "
     read -r WSGIDAV_PORT
+    if [[ "$WSGIDAV_PORT" -lt 1024 || "$WSGIDAV_PORT" -gt 65535 ]]; then
+        echo "端口号不在有效范围内 (1024-65535)。请重新输入。"
+        exit 1
+    fi
+
 else
     # 用户自己输入端口号
     WSGIDAV_PORT="$user_input"
+    if [[ "$WSGIDAV_PORT" -lt 1024 || "$WSGIDAV_PORT" -gt 65535 ]]; then
+        echo "端口号不在有效范围内 (1024-65535)。请重新输入。"
+        exit 1
+    fi
+
 fi
 
 echo "请输入 WebDAV 的用户名 (默认: user):"
@@ -114,8 +124,8 @@ fi
 
 # 删除 .bash_profile 中可能存在的旧条目
 sed -i '/export PATH=".*\/node_modules\/pm2\/bin:$PATH"/d' "$BASH_PROFILE"
-sed -i '/export CFLAGS="-I/usr/local/include"/d' "$BASH_PROFILE"
-sed -i 'export CXXFLAGS="-I/usr/local/include"/d' "$BASH_PROFILE"
+sed -i '/export CFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
+sed -i '/export CXXFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
 
 # 添加新的环境变量条目到 .bash_profile
 echo "export PATH=\"$USER_HOME/node_modules/pm2/bin:\$PATH\"" >> "$BASH_PROFILE"
@@ -124,7 +134,6 @@ echo 'export CXXFLAGS="-I/usr/local/include"' >> "$BASH_PROFILE"
 
 # 重新加载 .bash_profile
 source "$BASH_PROFILE"
-
 
 # 创建并激活虚拟环境
 if [ ! -d "$VENV_PATH" ]; then
@@ -172,11 +181,9 @@ devil binexec on
 echo "WsgiDAV 安装完成并已启动，当前服务运行在端口: $WSGIDAV_PORT"
 echo 'WsgiDAV版本："$VENV_PATH/bin/wsgidav -V"'
 
-
-# 重启 PM2 以应用更改
-pm2 restart all
-
-rm $USER_HOME/domains/$(whoami).serv00.net/public_html/index.html
+if [ -f "$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html" ]; then
+    rm "$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html"
+fi
 
 # 生成 info.html 文件
 INFO_FILE="$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html"
@@ -223,10 +230,10 @@ cat <<EOF > "$INFO_FILE"
     <div class="container">
         <h1>WebDAV 已成功安装</h1>
         <p>恭喜！WsgiDAV 已成功安装并运行在 <strong>$(whoami).serv00.net</strong> 上。当前的 WebDAV 服务正在端口 <strong>$WSGIDAV_PORT</strong> 上运行。</p>
-
+        <h2> <a href="/dav" target="_blank">打 开 网 盘</a></h2>
         <h2>主要功能</h2>
         <ul>
-            <li>提供 WebDAV 文件共享服务</li>
+            <li>一键安装 WebDAV 文件共享服务</li>
             <li>支持简单的用户认证</li>
             <li>使用 PM2 管理服务，确保其在系统重启后自动恢复</li>
         </ul>
@@ -252,5 +259,7 @@ cat <<EOF > "$INFO_FILE"
 </html>
 EOF
 
+# 重启 PM2 以应用更改
+pm2 restart all
 
 echo "Happy Webdav. 请从【 https://$(whoami).serv00.net 】开始"

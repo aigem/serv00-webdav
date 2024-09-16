@@ -123,9 +123,9 @@ else
 fi
 
 # 删除 .bash_profile 中可能存在的旧条目
-sed -i '/export PATH=".*\/node_modules\/pm2\/bin:$PATH"/d' "$BASH_PROFILE"
-sed -i '/export CFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
-sed -i '/export CXXFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
+sed -i '' '/export PATH=".*\/node_modules\/pm2\/bin:$PATH"/d' "$BASH_PROFILE"
+sed -i '' '/export CFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
+sed -i '' '/export CXXFLAGS="-I\/usr\/local\/include"/d' "$BASH_PROFILE"
 
 # 添加新的环境变量条目到 .bash_profile
 echo "export PATH=\"$USER_HOME/node_modules/pm2/bin:\$PATH\"" >> "$BASH_PROFILE"
@@ -179,13 +179,13 @@ devil binexec on
 
 # 提示安装完成
 echo "WsgiDAV 安装完成并已启动，当前服务运行在端口: $WSGIDAV_PORT"
-echo 'WsgiDAV版本："$VENV_PATH/bin/wsgidav -V"'
+echo 'WsgiDAV版本：$VENV_PATH/bin/wsgidav -V'
 
 if [ -f "$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html" ]; then
     rm "$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html"
 fi
 
-# 生成 info.html 文件
+# 生成 info文件
 INFO_FILE="$USER_HOME/domains/$(whoami).serv00.net/public_html/index.html"
 
 cat <<EOF > "$INFO_FILE"
@@ -264,6 +264,4 @@ pm2 restart all
 
 echo "Happy Webdav. 请从【 https://$(whoami).serv00.net 】开始"
 
-if [ -f "$USER_HOME/serv00-webdav/install_wsgidav.sh" ]; then
-    rm -rf "$USER_HOME/serv00-webdav"
-fi
+cd

@@ -3,7 +3,7 @@
 # 用户目录
 USER_HOME="/usr/home/$(whoami)"
 VENV_PATH="$USER_HOME/venv_webdav"
-CONFIG_FILE="$USER_HOME/wsgidav.yaml"
+CONFIG_FILE="$USER_HOME/webdav/wsgidav.yaml"
 BASH_PROFILE="$USER_HOME/.bash_profile"
 
 # 切换到用户目录
